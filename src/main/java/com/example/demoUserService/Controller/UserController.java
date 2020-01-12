@@ -11,13 +11,11 @@ import java.nio.file.Paths;
 @RestController
 public class UserController {
 
-    private final Path path = Paths.get("D:\\Projects\\demoUserService\\tmp");
+    private final Path path = Paths.get("C:\\Users\\Леонид\\IdeaProjects\\untitled\\UserService\\tmp");
 
     @GetMapping("/size")
     public long getSize(){
-
         UserService userService = new UserServiceImpl(path);
-
         return userService.getSizeFolder();
     }
 
@@ -32,4 +30,12 @@ public class UserController {
         UserService userService = new UserServiceImpl(path);
         userService.deleteAll();
     }
+
+    @GetMapping("/download")
+    public byte[] downloadZip(){
+        UserService userService = new UserServiceImpl(path);
+        userService.archivingFile();
+        return new byte[0];
+    }
+
 }

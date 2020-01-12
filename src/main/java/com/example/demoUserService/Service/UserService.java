@@ -10,5 +10,7 @@ public interface UserService {
 
     void deleteAll();
 
+    void archivingFile();
+
     byte[] download(Path fileNamePath);
 }

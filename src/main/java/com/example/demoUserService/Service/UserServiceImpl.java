@@ -1,10 +1,12 @@
 package com.example.demoUserService.Service;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 public class UserServiceImpl implements UserService {
 
@@ -53,6 +55,33 @@ public class UserServiceImpl implements UserService {
         catch (IOException e){
             System.out.println(e.getMessage());
         }
+    }
+
+    @Override
+    public void archivingFile() {
+        try {
+            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + "archiveFiles.zip"));
+            DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.csv");
+            for (Path entry: stream){
+                FileInputStream fileInputStream = new FileInputStream(entry.toFile());
+                ZipEntry zipEntry = new ZipEntry(entry.toFile().getName());
+                zipOutputStream.putNextEntry(zipEntry);
+
+                byte[] bytes = new byte[1024];
+                int length;
+                while((length = fileInputStream.read(bytes)) >= 0) {
+                    zipOutputStream.write(bytes, 0, length);
+                }
+                fileInputStream.close();
+            }
+            zipOutputStream.close();
+            deleteAll();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
