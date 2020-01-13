@@ -12,5 +12,5 @@ public interface UserService {
 
     void archivingFile();
 
-    byte[] download(Path fileNamePath);
+    byte[] download();
 }

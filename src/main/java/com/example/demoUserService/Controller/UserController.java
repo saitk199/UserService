@@ -2,16 +2,20 @@ package com.example.demoUserService.Controller;
 
 import com.example.demoUserService.Service.UserService;
 import com.example.demoUserService.Service.UserServiceImpl;
-import org.springframework.http.HttpStatus;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 @RestController
 public class UserController {
 
-    private final Path path = Paths.get("C:\\Users\\Леонид\\IdeaProjects\\untitled\\UserService\\tmp");
+    private final Path path = Paths.get("D:\\Projects\\demoUserService\\tmp");
 
     @GetMapping("/size")
     public long getSize(){
@@ -32,10 +36,18 @@ public class UserController {
     }
 
     @GetMapping("/download")
-    public byte[] downloadZip(){
+    public ResponseEntity<ByteArrayResource> downloadZip(){
         UserService userService = new UserServiceImpl(path);
         userService.archivingFile();
-        return new byte[0];
+        byte[] file = userService.download();
+        Path zipPath = Paths.get(path.toString() + File.separator + "archiveFiles.zip");
+        ByteArrayResource resource = new ByteArrayResource(file);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipPath.getFileName().toString())
+                .contentLength(file.length)
+                .contentType(MediaType.parseMediaType("application/zip"))
+                .body(resource);
     }
 
 }
