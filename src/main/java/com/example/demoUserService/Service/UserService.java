@@ -1,16 +1,17 @@
 package com.example.demoUserService.Service;
 
+
 import java.nio.file.Path;
 
 public interface UserService {
 
-    long getSizeFolder();
+    long getSizeFolder(Path path);
 
     void deleteFile(String fileName);
 
-    void deleteAll();
+    void deleteAll(Path path);
 
-    void archivingFile();
+    void archivingFile(String folder);
 
-    byte[] download();
+    byte[] download(String folder);
 }

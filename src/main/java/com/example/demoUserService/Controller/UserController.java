@@ -17,30 +17,29 @@ public class UserController {
 
     private final Path path = Paths.get("D:\\Projects\\demoUserService\\tmp");
 
+    private UserService userService = new UserServiceImpl(path);
+
     @GetMapping("/size")
     public long getSize(){
-        UserService userService = new UserServiceImpl(path);
-        return userService.getSizeFolder();
+        return userService.getSizeFolder(path);
     }
 
     @DeleteMapping("/delete")
     public void delFile(@RequestParam(name = "file") String file){
-        UserService userService = new UserServiceImpl(path);
         userService.deleteFile(file);
     }
 
     @DeleteMapping("/deleteall")
     public void delAll(){
-        UserService userService = new UserServiceImpl(path);
-        userService.deleteAll();
+        userService.deleteAll(path);
     }
 
     @GetMapping("/download")
-    public ResponseEntity<ByteArrayResource> downloadZip(){
-        UserService userService = new UserServiceImpl(path);
-        userService.archivingFile();
-        byte[] file = userService.download();
-        Path zipPath = Paths.get(path.toString() + File.separator + "archiveFiles.zip");
+    public ResponseEntity<ByteArrayResource> downloadZip(@RequestParam(name = "folder") String folder){
+
+        userService.archivingFile(folder);
+        byte[] file = userService.download(folder);
+        Path zipPath = Paths.get(path.toString() + File.separator + folder + File.separator + "archiveFiles.zip");
         ByteArrayResource resource = new ByteArrayResource(file);
 
         return ResponseEntity.ok()

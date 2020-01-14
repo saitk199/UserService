@@ -1,12 +1,7 @@
 package com.example.demoUserService.Service;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.List;
+import java.nio.file.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -19,29 +14,68 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public long getSizeFolder() {
+    public long getSizeFolder(Path path) {
 
         long sizeDir = 0;
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.zip")) {
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+
             for (Path entry : stream) {
-                sizeDir += Files.size(entry);
+                if (entry.toFile().isFile()) {
+                    sizeDir += Files.size(entry);
+                } else {
+                    sizeDir += getSizeFolder(entry);
+                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         return sizeDir;
+        /*
+        final AtomicLong size = new AtomicLong(0);
+
+    try {
+        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+
+                size.addAndGet(attrs.size());
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+
+                System.out.println("skipped: " + file + " (" + exc + ")");
+                // Skip folders that can't be traversed
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+
+                if (exc != null)
+                    System.out.println("had trouble traversing: " + dir + " (" + exc + ")");
+                // Ignore errors traversing a folder
+                return FileVisitResult.CONTINUE;
+            }
+        });
+    } catch (IOException e) {
+        throw new AssertionError("walkFileTree will not throw IOException if the FileVisitor does not");
+    }
+
+    return size.get();
+         */
     }
 
     @Override
     public void deleteFile(String fileName) {
 
-        Path fileNamePath = Paths.get(dir.toString() + File.separator + fileName + ".csv");
+        Path fileNamePath = Paths.get(dir.toString() + File.separator + fileName);
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.csv")) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileNamePath)) {
             for (Path entry : stream) {
-                if (entry.toString().equals(fileNamePath.toString())) {
-                    Files.delete(entry);
-                }
+                Files.delete(entry);
             }
         } catch (IOException e) {
             e.getMessage();
@@ -49,35 +83,46 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void deleteAll() {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.csv")) {
+    public void deleteAll(Path path) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path entry : stream) {
-                Files.delete(entry);
+                if(entry.toFile().isFile()) {
+                    Files.delete(entry);
+                }else {
+                    deleteAll(entry);
+                }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+        path.toFile().delete();
     }
 
     @Override
-    public void archivingFile() {
+    public void archivingFile(String folder) {
         try {
-            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + "archiveFiles.zip"));
-            DirectoryStream<Path> stream = Files.newDirectoryStream(dir, "*.csv");
+            ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + folder + ".zip"));
+            Path path = Paths.get(dir.toString() + File.separator + folder);
+            DirectoryStream<Path> stream = Files.newDirectoryStream(path);
             for (Path entry : stream) {
-                FileInputStream fileInputStream = new FileInputStream(entry.toFile());
-                ZipEntry zipEntry = new ZipEntry(entry.toFile().getName());
-                zipOutputStream.putNextEntry(zipEntry);
+                if (entry.endsWith(folder + ".zip")) {
+                    continue;
+                }else {
+                    FileInputStream fileInputStream = new FileInputStream(entry.toFile());
+                    ZipEntry zipEntry = new ZipEntry(entry.toFile().getName());
+                    zipOutputStream.putNextEntry(zipEntry);
 
-                byte[] bytes = new byte[1024];
-                int length;
-                while ((length = fileInputStream.read(bytes)) >= 0) {
-                    zipOutputStream.write(bytes, 0, length);
+                    byte[] bytes = new byte[1024];
+                    int length;
+                    while ((length = fileInputStream.read(bytes)) >= 0) {
+                        zipOutputStream.write(bytes, 0, length);
+                    }
+                    fileInputStream.close();
+                    Files.delete(entry);
                 }
-                fileInputStream.close();
             }
+            Files.delete(path);
             zipOutputStream.close();
-            deleteAll();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -85,8 +130,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public byte[] download() {
-        Path filePath = Paths.get(dir.toString() + File.separator + "archiveFiles.zip");
+    public byte[] download(String folder) {
+        Path filePath = Paths.get(dir.toString() + File.separator + folder + ".zip");
 
         byte[] bytes = new byte[0];
         try {
