@@ -1,5 +1,8 @@
 package com.example.demoUserService.Service;
 
+import ch.qos.logback.core.util.FileUtil;
+import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.nio.file.*;
 import java.util.zip.ZipEntry;
@@ -16,9 +19,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public long getSizeFolder(Path path) {
 
-        long sizeDir = 0;
+        long sizeDir = FileUtils.sizeOfDirectory(path.toFile());
+        return sizeDir;
 
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+        /*try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
 
             for (Path entry : stream) {
                 if (entry.toFile().isFile()) {
@@ -30,47 +34,59 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        return sizeDir;
-        /*
+        return sizeDir;*/
+
+/*
         final AtomicLong size = new AtomicLong(0);
 
-    try {
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
+        try {
+            Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
 
-                size.addAndGet(attrs.size());
-                return FileVisitResult.CONTINUE;
-            }
+                    size.addAndGet(attrs.size());
+                    return FileVisitResult.CONTINUE;
+                }
 
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
+                @Override
+                public FileVisitResult visitFileFailed(Path file, IOException exc) {
 
-                System.out.println("skipped: " + file + " (" + exc + ")");
-                // Skip folders that can't be traversed
-                return FileVisitResult.CONTINUE;
-            }
+                    System.out.println("skipped: " + file + " (" + exc + ")");
+                    // Skip folders that can't be traversed
+                    return FileVisitResult.CONTINUE;
+                }
 
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
+                @Override
+                public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
 
-                if (exc != null)
-                    System.out.println("had trouble traversing: " + dir + " (" + exc + ")");
-                // Ignore errors traversing a folder
-                return FileVisitResult.CONTINUE;
-            }
-        });
-    } catch (IOException e) {
-        throw new AssertionError("walkFileTree will not throw IOException if the FileVisitor does not");
-    }
+                    if (exc != null)
+                        System.out.println("had trouble traversing: " + dir + " (" + exc + ")");
+                    // Ignore errors traversing a folder
+                    return FileVisitResult.CONTINUE;
+                }
+            });
+        } catch (IOException e) {
+            throw new AssertionError("walkFileTree will not throw IOException if the FileVisitor does not");
+        }
 
-    return size.get();
-         */
+        return size.get();
+*/
     }
 
     @Override
     public void deleteFile(String fileName) {
+        File file = new File(dir.toString() + File.separator + fileName);
+        try {
+            if(file.isFile()){
+                FileUtils.forceDelete(file);
+            }else {
+                FileUtils.deleteDirectory(file);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+/*
         Path fileNamePath = Paths.get(dir.toString() + File.separator + fileName);
 
         try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileNamePath)) {
@@ -80,11 +96,17 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             e.getMessage();
         }
+*/
     }
 
     @Override
     public void deleteAll(Path path) {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
+        try {
+            FileUtils.deleteDirectory(path.toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        /*try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path entry : stream) {
                 if(entry.toFile().isFile()) {
                     Files.delete(entry);
@@ -95,7 +117,7 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
-        path.toFile().delete();
+        path.toFile().delete();*/
     }
 
     @Override
@@ -118,11 +140,13 @@ public class UserServiceImpl implements UserService {
                         zipOutputStream.write(bytes, 0, length);
                     }
                     fileInputStream.close();
-                    Files.delete(entry);
+                    //Files.delete(entry);
                 }
             }
-            Files.delete(path);
+            //Files.delete(path);
+            stream.close();
             zipOutputStream.close();
+            FileUtils.deleteDirectory(path.toFile());
         } catch (IOException e) {
             e.printStackTrace();
         }
