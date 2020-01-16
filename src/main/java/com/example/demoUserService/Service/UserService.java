@@ -5,13 +5,13 @@ import java.nio.file.Path;
 
 public interface UserService {
 
-    long getSizeFolder(Path path);
+    long getSizeFolder();
 
     void deleteFile(String fileName);
 
-    void deleteAll(Path path);
+    void deleteAll();
 
-    void archivingFile(String folder);
+    void zipFolder(String folder);
 
-    byte[] download(String folder);
+    byte[] zipToByte(Path zipPath);
 }

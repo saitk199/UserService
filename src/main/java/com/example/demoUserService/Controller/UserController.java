@@ -21,7 +21,7 @@ public class UserController {
 
     @GetMapping("/size")
     public long getSize(){
-        return userService.getSizeFolder(path);
+        return userService.getSizeFolder();
     }
 
     @DeleteMapping("/delete")
@@ -31,15 +31,15 @@ public class UserController {
 
     @DeleteMapping("/deleteall")
     public void delAll(){
-        userService.deleteAll(path);
+        userService.deleteAll();
     }
 
     @GetMapping("/download")
     public ResponseEntity<ByteArrayResource> downloadZip(@RequestParam(name = "folder") String folder){
 
-        userService.archivingFile(folder);
-        byte[] file = userService.download(folder);
+        userService.zipFolder(folder);
         Path zipPath = Paths.get(path.toString() + File.separator + folder + ".zip");
+        byte[] file = userService.zipToByte(zipPath);
         ByteArrayResource resource = new ByteArrayResource(file);
 
         return ResponseEntity.ok()

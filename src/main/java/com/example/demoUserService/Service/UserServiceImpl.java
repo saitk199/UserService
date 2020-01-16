@@ -18,9 +18,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public long getSizeFolder(Path path) {
+    public long getSizeFolder() {
 
-        long sizeDir = FileUtils.sizeOfDirectory(path.toFile());
+        long sizeDir = FileUtils.sizeOfDirectory(dir.toFile());
         return sizeDir;
 
         /*try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
@@ -86,44 +86,66 @@ public class UserServiceImpl implements UserService {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-/*
-        Path fileNamePath = Paths.get(dir.toString() + File.separator + fileName);
-
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileNamePath)) {
-            for (Path entry : stream) {
-                Files.delete(entry);
-            }
-        } catch (IOException e) {
-            e.getMessage();
-        }
-*/
     }
+        //delete file without common.io.FileUtils
+        /*Path fileNamePath = Paths.get(dir.toString() + File.separator + fileName);
+
+        if (fileNamePath.toFile().isFile()){
+            try {
+                Files.delete(fileNamePath);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }else {
+            try (DirectoryStream<Path> stream = Files.newDirectoryStream(fileNamePath)) {
+                for (Path entry : stream) {
+                    Files.delete(entry);
+                }
+                Files.delete(fileNamePath);
+            } catch (IOException e) {
+                e.getMessage();
+            }
+        }*/
+
 
     @Override
-    public void deleteAll(Path path) {
+    public void deleteAll() {
         try {
-            FileUtils.deleteDirectory(path.toFile());
+            FileUtils.deleteDirectory(dir.toFile());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+        //Delete all files without common.io.FileUtils
         /*try (DirectoryStream<Path> stream = Files.newDirectoryStream(path)) {
             for (Path entry : stream) {
                 if(entry.toFile().isFile()) {
                     Files.delete(entry);
                 }else {
-                    deleteAll(entry);
+                    deleteAll2(entry);
                 }
             }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
         path.toFile().delete();*/
-    }
+
 
     @Override
-    public void archivingFile(String folder) {
-        /*try {
+    public void zipFolder(String folder) {
+        Path wholeDirToZip = Paths.get(dir.toString() + File.separator + folder);
+        Path zipFile = Paths.get(dir.toString() + File.separator + folder + ".zip");
+        JkPathTree.of(wholeDirToZip).zipTo(zipFile);
+        try {
+            FileUtils.deleteDirectory(wholeDirToZip.toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+    //Zip folder without jeka.core
+    /*public void zipFolder2(String folder){
+        try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + folder + ".zip"));
             Path path = Paths.get(dir.toString() + File.separator + folder);
             DirectoryStream<Path> stream = Files.newDirectoryStream(path);
@@ -150,25 +172,15 @@ public class UserServiceImpl implements UserService {
             FileUtils.deleteDirectory(path.toFile());
         } catch (IOException e) {
             e.printStackTrace();
-        }*/
-        Path wholeDirToZip = Paths.get(dir.toString() + File.separator + folder);
-        Path zipFile = Paths.get(dir.toString() + File.separator + folder + ".zip");
-        JkPathTree.of(wholeDirToZip).zipTo(zipFile);
-        try {
-            FileUtils.deleteDirectory(wholeDirToZip.toFile());
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
-    }
+    }*/
 
     @Override
-    public byte[] download(String folder) {
-        Path filePath = Paths.get(dir.toString() + File.separator + folder + ".zip");
+    public byte[] zipToByte(Path zipPath) {
 
         byte[] bytes = new byte[0];
         try {
-            bytes = Files.readAllBytes(filePath);
+            bytes = Files.readAllBytes(zipPath);
         } catch (IOException e) {
             e.printStackTrace();
         }
