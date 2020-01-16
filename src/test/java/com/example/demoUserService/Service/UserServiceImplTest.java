@@ -14,14 +14,19 @@ class UserServiceImplTest {
 
     @Test
     void getSizeFolder() {
-
-        long expected = 2382;
         Date firstDate = new Date();
         long actual = userService.getSizeFolder();
         Date lastDate = new Date();
-        if(expected == actual){
-            System.out.println(lastDate.getTime() - firstDate.getTime());
-        }
+        System.out.println("size folder - " + actual + "; time - " + (lastDate.getTime() - firstDate.getTime()));
+    }
+
+    @Test
+    void deleteFile() {
+        String fileName = "test2";
+        Date firstDate = new Date();
+        userService.deleteFile(fileName);
+        Date lastDate = new Date();
+        System.out.println("delete file time " + (lastDate.getTime() - firstDate.getTime()));
     }
 
     @Test
@@ -29,6 +34,11 @@ class UserServiceImplTest {
     }
 
     @Test
-    void archivingFile() {
+    void zipFolder() {
+        String folder = "test3";
+        Date firstDate = new Date();
+        userService.zipFolder(folder);
+        Date lastDate = new Date();
+        System.out.println("zip Folder time " + (lastDate.getTime() - firstDate.getTime()));
     }
 }

@@ -4,6 +4,7 @@ import com.example.demoUserService.Service.UserService;
 import com.example.demoUserService.Service.UserServiceImpl;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,14 +40,18 @@ public class UserController {
 
         userService.zipFolder(folder);
         Path zipPath = Paths.get(path.toString() + File.separator + folder + ".zip");
-        byte[] file = userService.zipToByte(zipPath);
-        ByteArrayResource resource = new ByteArrayResource(file);
+        if (zipPath.toFile().exists()) {
+            byte[] file = userService.zipToByte(zipPath);
+            ByteArrayResource resource = new ByteArrayResource(file);
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipPath.getFileName().toString())
-                .contentLength(file.length)
-                .contentType(MediaType.parseMediaType("application/zip"))
-                .body(resource);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment;filename=" + zipPath.getFileName().toString())
+                    .contentLength(file.length)
+                    .contentType(MediaType.parseMediaType("application/zip"))
+                    .body(resource);
+        }else return new ResponseEntity (
+                "This file not found",
+                HttpStatus.BAD_REQUEST);
     }
 
 }

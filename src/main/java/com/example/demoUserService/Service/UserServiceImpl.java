@@ -1,13 +1,10 @@
 package com.example.demoUserService.Service;
 
-import ch.qos.logback.core.util.FileUtil;
 import dev.jeka.core.api.file.JkPathTree;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.file.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 public class UserServiceImpl implements UserService {
 
@@ -134,17 +131,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void zipFolder(String folder) {
         Path wholeDirToZip = Paths.get(dir.toString() + File.separator + folder);
-        Path zipFile = Paths.get(dir.toString() + File.separator + folder + ".zip");
-        JkPathTree.of(wholeDirToZip).zipTo(zipFile);
-        try {
-            FileUtils.deleteDirectory(wholeDirToZip.toFile());
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(wholeDirToZip.toFile().exists()) {
+            Path zipFile = Paths.get(dir.toString() + File.separator + folder + ".zip");
+            JkPathTree.of(wholeDirToZip).zipTo(zipFile);
+            try {
+                FileUtils.deleteDirectory(wholeDirToZip.toFile());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-
     }
     //Zip folder without jeka.core
-    /*public void zipFolder2(String folder){
+    /*public void zipFolder(String folder){
         try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + folder + ".zip"));
             Path path = Paths.get(dir.toString() + File.separator + folder);
