@@ -39,7 +39,7 @@ public class UserController {
 
         userService.archivingFile(folder);
         byte[] file = userService.download(folder);
-        Path zipPath = Paths.get(path.toString() + File.separator + folder + File.separator + "archiveFiles.zip");
+        Path zipPath = Paths.get(path.toString() + File.separator + folder + ".zip");
         ByteArrayResource resource = new ByteArrayResource(file);
 
         return ResponseEntity.ok()

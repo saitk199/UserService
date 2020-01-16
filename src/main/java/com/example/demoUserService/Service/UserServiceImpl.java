@@ -1,6 +1,7 @@
 package com.example.demoUserService.Service;
 
 import ch.qos.logback.core.util.FileUtil;
+import dev.jeka.core.api.file.JkPathTree;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
@@ -122,7 +123,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void archivingFile(String folder) {
-        try {
+        /*try {
             ZipOutputStream zipOutputStream = new ZipOutputStream(new FileOutputStream(dir.toString() + File.separator + folder + ".zip"));
             Path path = Paths.get(dir.toString() + File.separator + folder);
             DirectoryStream<Path> stream = Files.newDirectoryStream(path);
@@ -147,6 +148,14 @@ public class UserServiceImpl implements UserService {
             stream.close();
             zipOutputStream.close();
             FileUtils.deleteDirectory(path.toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        Path wholeDirToZip = Paths.get(dir.toString() + File.separator + folder);
+        Path zipFile = Paths.get(dir.toString() + File.separator + folder + ".zip");
+        JkPathTree.of(wholeDirToZip).zipTo(zipFile);
+        try {
+            FileUtils.deleteDirectory(wholeDirToZip.toFile());
         } catch (IOException e) {
             e.printStackTrace();
         }
