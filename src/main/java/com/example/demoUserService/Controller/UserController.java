@@ -49,9 +49,10 @@ public class UserController {
                     .contentLength(file.length)
                     .contentType(MediaType.parseMediaType("application/zip"))
                     .body(resource);
-        }else return new ResponseEntity (
-                "This file not found",
-                HttpStatus.BAD_REQUEST);
+        }else{
+            return new ResponseEntity (
+                    "This file not found",
+                    HttpStatus.BAD_REQUEST);
+        }
     }
-
 }
