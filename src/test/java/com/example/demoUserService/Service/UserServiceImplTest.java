@@ -6,12 +6,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -74,13 +75,41 @@ class UserServiceImplTest {
     }
 
     @Test
-    void zipFolder() {
+    void zipFolder() throws IOException {
         String folder = "test1";
-        Date firstDate = new Date();
         userService.zipFolder(folder);
-        Date lastDate = new Date();
+        Path pathDir = Paths.get(path.toString() + File.separator + folder);
+        byte[] buffer = new byte[1024];
+        ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(path.toString() + File.separator + folder + ".zip"));
+        ZipEntry zipEntry = zipInputStream.getNextEntry();
+        while (zipEntry != null) {
+            File newFile = newFile(pathDir.toFile(), zipEntry);
+            FileOutputStream fileOutputStream = new FileOutputStream(newFile);
+            int len;
+            while ((len = zipInputStream.read(buffer)) > 0) {
+                fileOutputStream.write(buffer, 0, len);
+            }
+            fileOutputStream.close();
+            zipEntry = zipInputStream.getNextEntry();
+        }
+        zipInputStream.closeEntry();
+        zipInputStream.close();
+        File file = new File(path.toString() + File.separator + folder + File.separator + "testData.txt");
+        FileUtils.writeStringToFile(new File(path.toString() + File.separator + "testData2.txt"), "Это тест, и в нем тестируются тесты.", "utf-8");
 
-        System.out.println("zip Folder time " + (lastDate.getTime() - firstDate.getTime()));
+    }
+
+    public static File newFile(File pathDir, ZipEntry zipEntry) throws IOException {
+        File newFile = new File(pathDir, zipEntry.getName());
+
+        String destDirPath = pathDir.getCanonicalPath();
+        String destFilePath = newFile.getCanonicalPath();
+
+        if (!destFilePath.startsWith(destDirPath + File.separator)) {
+            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        }
+
+        return newFile;
     }
 
     @AfterEach
