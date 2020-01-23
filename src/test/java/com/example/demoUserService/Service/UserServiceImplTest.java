@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -21,16 +22,11 @@ class UserServiceImplTest {
     UserService userService;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         path = Paths.get("src\\test\\resources\\tmp");
         userService = new UserServiceImpl(path);
         Path newFolder = Paths.get(path.toString() + File.separator + "test1");
-        try {
-            FileUtils.writeStringToFile(new File(newFolder.toString() + File.separator + "testData.txt"), "Это тест, и в нем тестируются тесты.", "utf-8");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        FileUtils.writeStringToFile(new File(newFolder.toString() + File.separator + "testData.txt"), "Это тест, и в нем тестируются тесты.", "utf-8");
     }
 
     @Test
@@ -83,7 +79,8 @@ class UserServiceImplTest {
         ZipInputStream zipInputStream = new ZipInputStream(new FileInputStream(path.toString() + File.separator + folder + ".zip"));
         ZipEntry zipEntry = zipInputStream.getNextEntry();
         while (zipEntry != null) {
-            File newFile = newFile(pathDir.toFile(), zipEntry);
+            File newFile = new File(pathDir.toFile(), zipEntry.getName());
+            FileUtils.write(newFile, null, "utf-8");
             FileOutputStream fileOutputStream = new FileOutputStream(newFile);
             int len;
             while ((len = zipInputStream.read(buffer)) > 0) {
@@ -94,23 +91,17 @@ class UserServiceImplTest {
         }
         zipInputStream.closeEntry();
         zipInputStream.close();
-        File file = new File(path.toString() + File.separator + folder + File.separator + "testData.txt");
-        FileUtils.writeStringToFile(new File(path.toString() + File.separator + "testData2.txt"), "Это тест, и в нем тестируются тесты.", "utf-8");
-
-    }
-
-    public static File newFile(File pathDir, ZipEntry zipEntry) throws IOException {
-        File newFile = new File(pathDir, zipEntry.getName());
-
-        String destDirPath = pathDir.getCanonicalPath();
-        String destFilePath = newFile.getCanonicalPath();
-
-        if (!destFilePath.startsWith(destDirPath + File.separator)) {
-            throw new IOException("Entry is outside of the target dir: " + zipEntry.getName());
+        Path actualFile = Paths.get(pathDir.toFile() + File.separator + "testData.txt");
+        FileUtils.writeStringToFile(new File(path.toString() + File.separator + "test2" + File.separator + "testData2.txt"), "Это тест, и в нем тестируются тесты.", "utf-8");
+        List<String> links1 = Files.readAllLines(actualFile);
+        List<String> links2 = Files.readAllLines(Paths.get(path.toString() + File.separator + "test2" + File.separator + "testData2.txt"));
+        for(String line1:links1){
+            for(String line2:links2){
+                assertTrue(line1.equals(line2));
+            }
         }
-
-        return newFile;
     }
+
 
     @AfterEach
     public void clean() {
