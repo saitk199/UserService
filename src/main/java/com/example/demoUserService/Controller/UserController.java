@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -54,5 +55,15 @@ public class UserController {
                     "This file not found",
                     HttpStatus.BAD_REQUEST);
         }
+    }
+
+    @GetMapping("/code")
+    public List<String> getCode(){
+        return userService.getCodeByZipNames();
+    }
+
+    @GetMapping("/code-by-folder")
+    public List<String> getCodeByFolder(){
+        return userService.getCodeByFolder();
     }
 }

@@ -2,9 +2,12 @@ package com.example.demoUserService.Service;
 
 import dev.jeka.core.api.file.JkPathTree;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.*;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class UserServiceImpl implements UserService {
 
@@ -184,5 +187,36 @@ public class UserServiceImpl implements UserService {
         }
 
         return bytes;
+    }
+
+    @Override
+    public List<String> getCodeByZipNames() {
+        List<String> listCode = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path entry : stream){
+                if(entry.toString().endsWith(".zip")){
+                    String code = FilenameUtils.getBaseName(entry.toFile().getName());
+                    listCode.add(code);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return listCode;
+    }
+
+    @Override
+    public List<String> getCodeByFolder() {
+        List<String> listCode = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path entry : stream){
+                if(!entry.toFile().isFile()) {
+                    listCode.add(entry.toFile().getName());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return listCode;
     }
 }
